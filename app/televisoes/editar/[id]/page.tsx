@@ -42,8 +42,13 @@ export default function EditarTelevisaoPage({ params }: EditarTelevisaoPageProps
   const carregarTelevisao = async (id: string) => {
     try {
       setLoadingData(true)
+      console.log("Carregando televisão com ID:", id)
+
       const televisoes = await TelevisaoAPI.listarTelevisoes()
+      console.log("Lista de televisões:", televisoes)
+
       const televisao = televisoes.find((tv) => tv._id === id)
+      console.log("Televisão encontrada:", televisao)
 
       if (televisao) {
         setFormData({
@@ -51,7 +56,13 @@ export default function EditarTelevisaoPage({ params }: EditarTelevisaoPageProps
           modelo: televisao.modelo,
           quantidadeCanais: televisao.quantidadeCanais.toString(),
         })
+        console.log("Dados carregados no formulário:", {
+          marca: televisao.marca,
+          modelo: televisao.modelo,
+          quantidadeCanais: televisao.quantidadeCanais.toString(),
+        })
       } else {
+        console.error("Televisão não encontrada na lista")
         toast({
           title: "❌ Erro",
           description: "Televisão não encontrada.",
@@ -60,6 +71,7 @@ export default function EditarTelevisaoPage({ params }: EditarTelevisaoPageProps
         router.push("/televisoes")
       }
     } catch (error) {
+      console.error("Erro ao carregar televisão:", error)
       toast({
         title: "❌ Erro",
         description: "Não foi possível carregar os dados da televisão.",
@@ -94,22 +106,37 @@ export default function EditarTelevisaoPage({ params }: EditarTelevisaoPageProps
 
     try {
       setLoading(true)
-      await TelevisaoAPI.atualizarTelevisao(televisaoId, {
+      console.log("Iniciando atualização da televisão:", {
+        id: televisaoId,
+        dados: {
+          marca: formData.marca,
+          modelo: formData.modelo,
+          quantidadeCanais,
+        },
+      })
+
+      const resultado = await TelevisaoAPI.atualizarTelevisao(televisaoId, {
         marca: formData.marca,
         modelo: formData.modelo,
         quantidadeCanais,
       })
+
+      console.log("Resultado da atualização:", resultado)
 
       toast({
         title: "🎉 Sucesso!",
         description: "Televisão atualizada com sucesso!",
       })
 
-      router.push("/televisoes")
+      // Aguardar um pouco antes de redirecionar para mostrar o toast
+      setTimeout(() => {
+        router.push("/televisoes")
+      }, 1000)
     } catch (error) {
+      console.error("Erro completo:", error)
       toast({
         title: "❌ Erro",
-        description: "Não foi possível atualizar a televisão.",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar a televisão.",
         variant: "destructive",
       })
     } finally {
@@ -118,9 +145,11 @@ export default function EditarTelevisaoPage({ params }: EditarTelevisaoPageProps
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    console.log(`Campo ${name} alterado para:`, value)
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }))
   }
 
